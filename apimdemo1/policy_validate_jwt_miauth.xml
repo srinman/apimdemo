@@ -1,0 +1,40 @@
+<policies>
+    <inbound>
+        <base />
+        <!-- Validate the incoming JWT token -->
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="APIM: Unauthorized request" require-expiration-time="true" require-scheme="Bearer" require-signed-tokens="true">
+            <openid-config url="https://login.microsoftonline.com/yourtenantid/v2.0/.well-known/openid-configuration" />
+            <audiences>
+                <audience>https://management.azure.com</audience>
+            </audiences>
+            <issuers>
+                <issuer>https://sts.windows.net/yourtenantid/</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="appid" match="all">
+                    <value>clientid</value>
+                </claim>
+            </required-claims>
+        </validate-jwt>
+        <!-- Fetch the secret from Azure Key Vault using managed identity of APIM -->
+        <send-request mode="new" response-variable-name="secretResponse" timeout="20" ignore-error="false">
+            <set-url>https://srinman.vault.azure.net/secrets/topsecret/?api-version=7.0</set-url>
+            <set-method>GET</set-method>
+            <authentication-managed-identity resource="https://vault.azure.net" />
+        </send-request>
+        <set-variable name="topSecretValue" value="@{
+            var secret = ((IResponse)context.Variables["secretResponse"]).Body.As<JObject>();
+            return secret["value"].ToString();
+        }" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <set-body>@((string)context.Variables["topSecretValue"])</set-body>
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
