@@ -12,7 +12,15 @@ https://learn.microsoft.com/en-us/azure/api-management/authentication-managed-id
 
 https://learn.microsoft.com/en-us/azure/api-management/authentication-authorization-overview#service-side-options  
 
-![alt text](image.png)
+![alt text](./images/image.png)
+
+
+## Code samples  
 
 
 
+[APIM policy sample](./policy_validate_jwt_miauth.xml)
+
+[Test sh script code with client credentials flow](./clientcredflow.sh)
+
+[Test python code with client credentials flow](./clientcredflow.py)
